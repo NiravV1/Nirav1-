@@ -1,0 +1,109 @@
+-- Variables globales
+local player = game.Players.LocalPlayer
+local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+
+function UpdateCharInfo(newchar)
+    humanoid = newchar:WaitForChild("Humanoid")
+end
+
+if player and player.Character then
+    UpdateCharInfo(player.Character)
+end
+
+player.CharacterAdded:Connect(function(newchar)
+    UpdateCharInfo(newchar)
+end)
+
+function useAndFireServer()
+    local item = player.PlayerGui.MainGui.RightPanel.Inventory.List["Berry"].LayoutOrder
+    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("UseBagItem"):FireServer(item)
+wait(0.03)
+end
+
+-- Set auto-heal to true initially
+getgenv().autoheal = true
+
+-- Set the speed variables
+_G.SpeedLow = 1
+_G.SpeedMedium = 2
+_G.SpeedHigh = 3
+_G.SpeedVeryHigh = 4
+_G.SpeedUltraHigh = 5
+_G.SpeedInsane = 6
+_G.SpeedSuperInsane = 7
+_G.SpeedMegaInsane = 8
+
+-- Create a ScreenGui to hold the GUI elements
+local gui = Instance.new("ScreenGui")
+gui.Parent = game.CoreGui
+
+-- Create a Frame to hold the toggle button
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 100, 0, 50)
+frame.Position = UDim2.new(1, -150, 1, -100)
+frame.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+frame.BorderSizePixel = 0
+frame.Parent = gui
+
+-- Create a TextLabel for the toggle button label
+local label = Instance.new("TextLabel")
+label.Text = "Auto-Heal"
+label.TextSize = 14
+label.Size = UDim2.new(0, 100, 0, 20)
+label.Position = UDim2.new(0, 0, 0, 0)
+label.Parent = frame
+
+-- Create a TextButton for the toggle button
+local toggleButton = Instance.new("TextButton")
+toggleButton.Text = "OFF"
+toggleButton.TextSize = 14
+toggleButton.Size = UDim2.new(0, 50, 0, 20)
+toggleButton.Position = UDim2.new(0, 0, 0, 30)
+toggleButton.Parent = frame
+
+-- Function to toggle the autoheal variable and update the button text
+local function toggleAutoHeal()
+    getgenv().autoheal = not getgenv().autoheal
+    toggleButton.Text = getgenv().autoheal and "ON" or "OFF"
+end
+
+-- Connect the toggleAutoHeal function to the button's Click event
+toggleButton.MouseButton1Click:Connect(toggleAutoHeal)
+
+-- Connect the auto-heal logic to the Heartbeat event, with a delay
+local delayTime = 0.005  -- Delay in milliseconds
+local lastHealTime = 0
+
+game:GetService('RunService').Heartbeat:Connect(function()
+    if getgenv().autoheal and humanoid then
+        local currentHealth = humanoid.Health
+
+        local currentTime = tick()  -- Get the current time in milliseconds
+        if currentTime - lastHealTime >= delayTime then
+            lastHealTime = currentTime
+
+            if currentHealth < 99 then
+                for j = 1, 2 do -- Run the loop twice
+                    for k = 1, _G.SpeedHigh do
+                        useAndFireServer()
+                    end
+                end
+            elseif currentHealth < 80 then
+                for i = 1, 2 do -- Run the loop twice
+                    for l = 1, _G.SpeedVeryHigh do
+                        useAndFireServer()
+                    end
+                end
+            elseif currentHealth < 60 then
+                for m = 1, _G.SpeedInsane do
+                    useAndFireServer()
+                end
+            elseif currentHealth < 40 then
+                for n = 1, _G.SpeedMegaInsane do
+                    useAndFireServer()
+                end
+                -- Add more autoheal calls for other conditions if needed
+            end
+        end
+    end
+end)
